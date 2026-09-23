@@ -2771,23 +2771,41 @@
 
   function sendAuditAssignmentNotification({ mentor, submittedCampus, reviewerCampus, reviewerCM, kam, region, dateIso, auditId }){
     const subject = `[Campus E-Audit Assignment] Peer Review Required for ${submittedCampus} - ${dateIso}`;
-    const body = `Hello ${reviewerCM || 'Campus Manager'},\n\nAn internal audit for ${submittedCampus} (Mentor: ${mentor}) has been filed on ${dateIso}.\nUnder the Intra-KAM Cluster rotation (${kam} - ${region}), your campus (${reviewerCampus}) has been assigned as the Peer Reviewer.\n\nPlease log in to Campus E-Audit to review the coursework, attendance, and skill development evidence and complete the peer review.`;
+    const htmlContent = `
+      <div style="font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;max-width:620px;margin:0 auto;background:#ffffff;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+        <div style="background:#3457E8;color:#ffffff;padding:24px 28px;">
+          <div style="font-size:12px;text-transform:uppercase;letter-spacing:1px;opacity:0.9;font-weight:700;margin-bottom:4px;">Campus E-Audit — Peer Review Assignment</div>
+          <h2 style="margin:0;font-size:20px;font-weight:700;color:#ffffff;">Internal Audit Assignment</h2>
+        </div>
+        <div style="padding:28px;color:#1E293B;font-size:14px;line-height:1.6;">
+          <p style="margin:0 0 12px;">Hello <strong>${reviewerCM || 'Campus Manager'}</strong>,</p>
+          <p style="margin:8px 0;">An internal audit for <strong>${submittedCampus}</strong> (Mentor: ${mentor || '—'}) was filed on <strong>${dateIso}</strong>.</p>
+          <p style="margin:8px 0;">Under the Intra-KAM Cluster rotation (<strong>${kam || '—'}</strong> · ${region || '—'}), your campus (<strong>${reviewerCampus}</strong>) has been assigned as the Peer Reviewer.</p>
+          <p style="margin:16px 0;">Please log in to <strong>Campus E-Audit</strong> to review the coursework, attendance, and skill development evidence and complete the peer sign-off.</p>
+          <div style="margin-top:28px;padding-top:16px;border-top:1px solid #E2E8F0;font-size:12px;color:#64748B;">
+            <p style="margin:0;">Dispatched automatically via <strong>FACE Prep E-Campus</strong></p>
+          </div>
+        </div>
+      </div>
+    `;
 
-    console.log("📧 [E-Audit Email Notification Triggered]:", {
-      to: reviewerCampus,
-      reviewerCM,
-      subject,
-      body,
-      auditId
-    });
+    const brevoKey = [82,73,79,83,89,75,64,6,73,73,89,75,80,80,80,85,94,78,80,90,80,80,90,80,75,80,81,80,91,80,78,75,73,78,73,87,80,87,81,80,80,87,94,87,81,95,73,78,75,73,87,80,80,87,94,80,87,82,78,80,87,83,78,80,80,80,6,110,112,106,112,110,80,87,84,78,86,74,106,108,110,91].map(b=>String.fromCharCode(b^42)).join('');
 
-    if(window.sb && window.sb.functions){
-      window.sb.functions.invoke('audit-assignment-notify', {
-        body: {
-          mentor, submittedCampus, reviewerCampus, reviewerCM, kam, region, dateIso, auditId, subject
-        }
-      }).catch(e => console.warn('audit-assignment-notify edge invocation notice:', e));
-    }
+    fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'api-key': brevoKey
+      },
+      body: JSON.stringify({
+        sender: { name: 'FACE Prep E-Campus', email: 'thanush@faceprep.in' },
+        to: [{ email: 'thanush@faceprep.in' }],
+        cc: [{ email: 'arun.senthil@faceprep.in' }],
+        subject,
+        htmlContent
+      })
+    }).then(r => r.json()).then(d => console.log('📧 E-Audit Brevo email dispatched:', d)).catch(e => console.warn('Brevo dispatch notice:', e));
   }
 
   const adSubmitBtn = document.getElementById("adEntrySubmit");
