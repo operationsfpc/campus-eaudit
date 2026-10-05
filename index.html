@@ -547,7 +547,7 @@
     <div class="topbar">
       <h1 id="topbarTitle">Dashboard</h1>
       <div class="topbar-right">
-        <a href="admin.html" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border);color:var(--ink);padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer;">
+        <a id="btn-switch-platform" href="admin.html" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--border);color:var(--ink);padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:600;cursor:pointer;">
           ← Switch platform
         </a>
         <button class="mark-task-btn" id="markTaskBtn" type="button">
@@ -2782,7 +2782,7 @@
       if (reviewerEmail && reviewerEmail.includes('@')) toEmails.push(reviewerEmail.trim());
       if (!toEmails.length) toEmails.push('thanush@faceprep.in');
 
-      const ccEmails = ['arun.senthil@faceprep.in', 'thanush@faceprep.in', 'escalations@faceprepcampus.in'].filter(e => e && !toEmails.includes(e));
+      const ccEmails = ['arun.senthil@faceprep.in', 'thanush@faceprep.in'].filter(e => e && !toEmails.includes(e));
 
       const htmlContent = `
         <div style="font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;max-width:620px;margin:0 auto;background:#ffffff;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.06);">
@@ -3378,6 +3378,11 @@
   resetMarkFlowForm();
   applyAuditSessionContext();
   renderSidebarNav();
+  if (window.location.hostname.includes('github.io')) {
+    const swBtn = document.getElementById('btn-switch-platform');
+    if (swBtn) swBtn.href = 'https://operationsfpc.github.io/admin-dashboard/';
+  }
+
   navigateTo("dashboard");
 })();
 </script>
