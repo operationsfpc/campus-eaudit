@@ -2800,7 +2800,7 @@
             <p style="margin:8px 0;">Under the Intra-KAM Cluster rotation (<strong>${kam || '—'}</strong> · ${region || '—'}), your campus (<strong>${reviewerCampus}</strong>) has been assigned as the Peer Reviewer.</p>
             <p style="margin:16px 0;">Please log in to <strong>Campus E-Audit</strong> to review the coursework, attendance, and skill development evidence and complete the peer sign-off.</p>
             <div style="margin-top:28px;padding-top:16px;border-top:1px solid #E2E8F0;font-size:12px;color:#64748B;">
-              <p style="margin:0;">Dispatched automatically via <strong>FACE Prep E-Campus</strong></p>
+              <p style="margin:0;">Dispatched automatically via <strong>FACE Prep Campus Help Desk</strong></p>
               <p style="margin:4px 0 0;">Timestamp: ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST</p>
             </div>
           </div>
@@ -2817,7 +2817,7 @@
           'api-key': brevoApiKey
         },
         body: JSON.stringify({
-          sender: { name: 'FACE Prep E-Campus', email: 'thanush@faceprep.in' },
+          sender: { name: 'FACE Prep Campus Help Desk', email: 'thanush@faceprep.in' },
           to: toEmails.map(email => ({ email })),
           ...(ccEmails.length ? { cc: ccEmails.map(email => ({ email })) } : {}),
           subject,
