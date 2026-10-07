@@ -2774,7 +2774,7 @@
     try {
       let reviewerEmail = null;
       if (window.sb && reviewerCampus) {
-        const { data } = await window.sb.from('college_contacts').select('campus_manager_email, senior_manager_email').eq('college', reviewerCampus).maybeSingle();
+        const { data } = await window.sb.from('college_contacts').select('campus_manager_email, senior_manager_email').ilike('college', reviewerCampus.trim()).maybeSingle();
         if (data && data.campus_manager_email) reviewerEmail = data.campus_manager_email;
       }
 
