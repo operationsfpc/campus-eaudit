@@ -2776,18 +2776,31 @@
   async function sendAuditAssignmentNotification({ mentor, submittedCampus, reviewerCampus, reviewerCM, kam, region, dateIso, auditId }){
     const subject = `[Campus E-Audit Assignment] Peer Review Required for ${submittedCampus} - ${dateIso}`;
     try {
-      let reviewerEmail = null;
+      // Recipient rules: only the reviewer campus's CM (or Incharge) and its own KAM, official
+      // @faceprep.in addresses only (never Gmail), with ashok@ and sainaveen@ always CC'd.
+      // If the campus, its KAM or its CM/Incharge has no official address, the email is not
+      // sent and is flagged for correction.
+      let reviewerEmail = null, reviewerKamEmail = null;
       if (window.sb && reviewerCampus) {
         const { data } = await window.sb.from('college_contacts').select('campus_manager_email, senior_manager_email').ilike('college', reviewerCampus.trim()).maybeSingle();
-        if (data && data.campus_manager_email) reviewerEmail = data.campus_manager_email;
+        if (data) { reviewerEmail = data.campus_manager_email; reviewerKamEmail = data.senior_manager_email; }
       }
 
-      const toEmails = [];
-      const splitEmails = (val) => { const seen = new Set(); return (Array.isArray(val) ? val : [val]).flatMap(v => String(v || '').split(',')).map(e => e.trim()).filter(e => /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(e) && !seen.has(e.toLowerCase()) && seen.add(e.toLowerCase())); };
-      splitEmails(reviewerEmail).forEach(e => toEmails.push(e));
-      if (!toEmails.length) toEmails.push('thanush@faceprep.in');
-
-      const ccEmails = ['arun.senthil@faceprep.in', 'thanush@faceprep.in'].filter(e => e && !toEmails.includes(e));
+      const officialEmails = (val) => { const seen = new Set(); return String(val || '').split(',').map(e => e.trim().toLowerCase()).filter(e => /^[^\s@,;]+@faceprep\.in$/.test(e) && !seen.has(e) && seen.add(e)); };
+      const cmList = officialEmails(reviewerEmail);
+      const kamList = officialEmails(reviewerKamEmail);
+      const problems = [];
+      if (!reviewerCampus) problems.push('no reviewer campus');
+      if (!kamList.length) problems.push('no official KAM email');
+      if (!cmList.length) problems.push('no official CM / Incharge email');
+      if (problems.length) {
+        const msg = `Assignment email NOT sent for ${reviewerCampus || 'unknown campus'}: ${problems.join(', ')}. Please correct the college contacts.`;
+        console.error('📧 ' + msg);
+        if (typeof toast === 'function') toast(msg);
+        return false;
+      }
+      const toEmails = cmList;
+      const ccEmails = [...new Set([...kamList, 'ashok@faceprep.in', 'sainaveen@faceprep.in'])].filter(e => !toEmails.includes(e));
 
       const htmlContent = `
         <div style="font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;max-width:620px;margin:0 auto;background:#ffffff;border:1px solid #E2E8F0;border-radius:12px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.06);">
